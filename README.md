@@ -16,11 +16,15 @@ This repository is at the foundation stage. It currently provides:
 - URI/path normalization for Solid storage roots and contained resources.
 - Request-to-access-mode mapping.
 - Authorization decision primitives.
+- Ash/Postgres resources for persisted pods, pod resources, ACL documents, and pod contracts.
+- AshCloak/Cloak support for encrypted-at-rest pod payloads.
+- Employee/guide pod contract template data.
 - A `SolidAsh.Store` behaviour for Ash-backed stores.
 - An in-memory test adapter.
 
-It does not yet provide a complete Solid server, Solid-OIDC provider/client,
-WAC parser/evaluator, ACP evaluator, RDF serialization, or Phoenix router.
+It does not yet provide a complete Phoenix Solid server, Solid-OIDC
+provider/client, WAC parser/evaluator, ACP evaluator, RDF serialization, or
+Ash migration installer.
 
 ## Target Specifications
 
@@ -34,13 +38,45 @@ Initial implementation targets:
 ## Roadmap
 
 1. Storage and resource core.
-2. Ash/Postgres store resources for storages, resources, versions, owners, and ACL documents.
-3. Phoenix/Plug adapter for Solid HTTP methods, CORS, Link headers, ETags, and conditional writes.
-4. WAC support for ACL discovery, control/read/write/append decisions, and owner bootstrap rules.
-5. WebID profile document generation and discovery.
-6. Solid-OIDC integration using Authorization Code + PKCE and DPoP validation.
-7. ACP support as a richer authorization policy model.
-8. Conformance test harness against the Solid specification test suites.
+2. Ash/Postgres store resources for storages, resources, versions, owners, ACL documents, and contracts.
+3. Ash migration installer/generator for host applications.
+4. Phoenix/Plug adapter for Solid HTTP methods, CORS, Link headers, ETags, and conditional writes.
+5. WAC support for ACL discovery, control/read/write/append decisions, and owner bootstrap rules.
+6. WebID profile document generation and discovery.
+7. Solid-OIDC integration using Authorization Code + PKCE and DPoP validation.
+8. ACP support as a richer authorization policy model.
+9. Conformance test harness against the Solid specification test suites.
+
+## Encrypted Persistence
+
+SolidAsh uses `AshCloak` with `Cloak` for sensitive persisted fields:
+
+- `SolidAsh.Resources.Pod.profile_data`
+- `SolidAsh.Resources.Pod.employment_contract`
+- `SolidAsh.Resources.PodResource.body`
+- `SolidAsh.Resources.PodResource.rdf_metadata`
+- `SolidAsh.Resources.PodAcl.acl_graph`
+- `SolidAsh.Resources.PodContract.required_data`
+- `SolidAsh.Resources.PodContract.accepted_data`
+
+Operational routing fields such as WebID, base URI, resource path, content type,
+and etag remain unencrypted so the server can route requests and enforce HTTP
+semantics efficiently.
+
+Host applications must configure a repo and vault key:
+
+```elixir
+config :solid_ash, repo: MyApp.Repo
+
+config :solid_ash, SolidAsh.Vault,
+  ciphers: [
+    default: {
+      Cloak.Ciphers.AES.GCM,
+      tag: "AES.GCM.V1",
+      key: Base.decode64!(System.fetch_env!("SOLID_ASH_VAULT_KEY_BASE64"))
+    }
+  ]
+```
 
 ## Installation
 

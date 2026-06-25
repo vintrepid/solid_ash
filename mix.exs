@@ -29,6 +29,9 @@ defmodule SolidAsh.MixProject do
   defp deps do
     [
       {:ash, "~> 3.0"},
+      {:ash_postgres, "~> 2.0"},
+      {:ash_cloak, "~> 0.3"},
+      {:cloak, "~> 1.0"},
       {:jason, "~> 1.4"},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false}
     ]
@@ -39,7 +42,7 @@ defmodule SolidAsh.MixProject do
       maintainers: ["Vince"],
       licenses: ["MIT"],
       links: %{"GitHub" => @source_url},
-      files: ~w(lib .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
+      files: ~w(config lib .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
     ]
   end
 

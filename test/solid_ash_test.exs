@@ -3,6 +3,8 @@ defmodule SolidAshTest do
 
   alias SolidAsh.{Request, Resource, Storage, Uri}
   alias SolidAsh.Authorization.Decision
+  alias SolidAsh.Contracts.Employee
+  alias SolidAsh.Resources.{Pod, PodAcl, PodContract, PodResource}
   alias SolidAsh.Store.Memory
 
   test "tracks the targeted Solid specification references" do
@@ -107,6 +109,30 @@ defmodule SolidAshTest do
 
     refute Memory.authorize(anonymous).allowed?
     assert Memory.authorize(authenticated).allowed?
+  end
+
+  test "persistent Ash resources encrypt sensitive pod data fields" do
+    assert AshCloak.Info.cloak_attributes!(Pod) == [:profile_data, :employment_contract]
+    assert AshCloak.Info.cloak_attributes!(PodResource) == [:body, :rdf_metadata]
+    assert AshCloak.Info.cloak_attributes!(PodAcl) == [:acl_graph]
+    assert AshCloak.Info.cloak_attributes!(PodContract) == [:required_data, :accepted_data]
+
+    pod_attributes = Ash.Resource.Info.attributes(Pod) |> Enum.map(& &1.name)
+
+    assert :encrypted_profile_data in pod_attributes
+    assert :encrypted_employment_contract in pod_attributes
+    refute :profile_data in pod_attributes
+    refute :employment_contract in pod_attributes
+  end
+
+  test "employee contract distinguishes guide certification requirements" do
+    contract = Employee.default(role: :guide)
+
+    assert contract.contract_key == "solid_ash.employee_pod"
+    assert :certifications in contract.required_sections
+    assert :swiftwater in contract.fields.certifications
+    assert contract.user_controls.can_export
+    assert contract.employer_controls.required_for_employment
   end
 
   defp storage!(attrs) do
