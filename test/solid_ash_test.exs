@@ -4,6 +4,7 @@ defmodule SolidAshTest do
   alias SolidAsh.{Request, Resource, Storage, Uri}
   alias SolidAsh.Authorization.Decision
   alias SolidAsh.Contracts.Employee
+  alias SolidAsh.Privacy.Email
   alias SolidAsh.Resources.{Pod, PodAcl, PodContract, PodResource}
   alias SolidAsh.Store.Memory
 
@@ -133,6 +134,28 @@ defmodule SolidAshTest do
     assert :swiftwater in contract.fields.certifications
     assert contract.user_controls.can_export
     assert contract.employer_controls.required_for_employment
+  end
+
+  test "email privacy helpers normalize and obfuscate addresses" do
+    assert Email.normalize(" Amy.Example@Example.COM ") == {:ok, "amy.example@example.com"}
+    assert Email.obfuscate("amy@example.com") == "a**@e*****e.com"
+    assert Email.obfuscate("v@ao.com") == "v**@a***o.com"
+    assert Email.obfuscate("not-an-email") == "hidden"
+  end
+
+  test "client email obfuscation removes raw email by default" do
+    response =
+      SolidAsh.Client.Privacy.obfuscate_email(%{email: "coach@example.com", name: "Coach"})
+
+    refute Map.has_key?(response, :email)
+    assert response.obfuscated_email == "c****@e*****e.com"
+    assert response.name == "Coach"
+
+    response =
+      SolidAsh.Client.Privacy.obfuscate_email(%{email: "coach@example.com"}, keep_raw?: true)
+
+    assert response.email == "coach@example.com"
+    assert response.obfuscated_email == "c****@e*****e.com"
   end
 
   defp storage!(attrs) do

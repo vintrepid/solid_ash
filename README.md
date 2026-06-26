@@ -19,6 +19,7 @@ This repository is at the foundation stage. It currently provides:
 - Ash/Postgres resources for persisted pods, pod resources, ACL documents, and pod contracts.
 - AshCloak/Cloak support for encrypted-at-rest pod payloads.
 - Employee/guide pod contract template data.
+- Email normalization and obfuscation helpers for privacy-preserving clients.
 - A `SolidAsh.Store` behaviour for Ash-backed stores.
 - An in-memory test adapter.
 
@@ -62,6 +63,12 @@ SolidAsh uses `AshCloak` with `Cloak` for sensitive persisted fields:
 Operational routing fields such as WebID, base URI, resource path, content type,
 and etag remain unencrypted so the server can route requests and enforce HTTP
 semantics efficiently.
+
+## Email Privacy
+
+SolidAsh clients should not expose raw emails unless explicitly authorized.
+Use `SolidAsh.Client.Privacy.obfuscate_email/2` for response maps and
+`SolidAsh.Privacy.Email.obfuscate/1` for display values.
 
 Host applications must configure a repo and vault key:
 

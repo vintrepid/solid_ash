@@ -8,3 +8,4 @@
 - Add Ash/Postgres resources for persisted encrypted pod storage.
 - Add AshCloak/Cloak vault support.
 - Add employee/guide pod contract template data.
+- Add email normalization and obfuscation helpers for Solid client responses.
