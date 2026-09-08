@@ -16,8 +16,8 @@ on AshAuthentication for application identity and authentication primitives.
 Those relationships are deliberately one-way:
 
 ```text
-journal_ash -> ash
-solid_ash   -> ash + journal_ash + ash_authentication
+journal_ash -> ash + cloak
+solid_ash   -> ash + journal_ash + ash_authentication + ash_cloak + cloak
 ash_lotus   -> pins and tests the compatible distribution
 ```
 
@@ -90,6 +90,12 @@ SolidAsh uses `AshCloak` with `Cloak` for sensitive persisted fields:
 Operational routing fields such as WebID, base URI, resource path, content type,
 and etag remain unencrypted so the server can route requests and enforce HTTP
 semantics efficiently.
+
+This is server-side encryption at rest, not end-to-end encryption: a running
+host with access to the configured vault key can decrypt pod data. A future
+client-encrypted mode can keep content keys under user control and send only
+ciphertext to the server, but it will require explicit recovery, sharing, and
+key-rotation contracts rather than a change to this vault's key handling.
 
 ## Email Privacy
 

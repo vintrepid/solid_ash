@@ -33,7 +33,7 @@ defmodule SolidAsh.MixProject do
       # JournalAsh is independent of SolidAsh; this immutable public commit is
       # the lower-layer journal contract validated by this library.
       {:journal_ash,
-       github: "vintrepid/journal_ash", ref: "5b151a68dffc62e564bef11f5865b212ab80a339"},
+       github: "vintrepid/journal_ash", ref: "898f427b4bb7126fdc3d8d8ca212aefb24e170db"},
       # SolidAsh follows the public upstream contract. AshLotus may override
       # this with its maintained, compatibility-tested fork.
       {:ash_authentication, "~> 4.0"},
