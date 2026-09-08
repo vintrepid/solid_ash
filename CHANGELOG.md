@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Raise dependency minimums to patched AshCloak, AshPostgres, AshSql, and
+  Postgrex versions, and document the narrowly acknowledged Decimal feed issue.
+- Establish the one-way dependency on JournalAsh and the compatible public
+  AshAuthentication contract; AshLotus may override both with its exact tested
+  distribution pins.
+- Make the pre-1.0 interface policy explicit: correct early resource and action
+  boundaries instead of accumulating compatibility shims.
+
 ## 0.1.0-dev
 
 - Scaffold SolidAsh as a standalone Elixir library.

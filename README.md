@@ -8,9 +8,36 @@ HTTP controllers, LiveViews, jobs, and tasks should stay thin. Solid storage,
 resource, authorization, and persistence rules belong in SolidAsh modules and
 Ash-backed store implementations.
 
+## Dependency Direction
+
+SolidAsh owns the private pod data model. It depends on Ash for resources and
+actions, on JournalAsh for the shared policy-governed observation pipeline, and
+on AshAuthentication for application identity and authentication primitives.
+Those relationships are deliberately one-way:
+
+```text
+journal_ash -> ash
+solid_ash   -> ash + journal_ash + ash_authentication
+ash_lotus   -> pins and tests the compatible distribution
+```
+
+JournalAsh must remain usable without SolidAsh. SolidAsh follows the compatible
+public AshAuthentication release; AshLotus may override it with a maintained,
+immutable fork as part of the distribution's tested dependency graph.
+
+Adding JournalAsh establishes the common logging and journal infrastructure; it
+does not claim that current Solid mutations are transaction-linked committed
+facts. Application code continues to call `Logger`, while JournalAsh owns
+retention and conventional-log projection policy.
+
 ## Status
 
-This repository is at the foundation stage. It currently provides:
+This repository is an unreleased, pre-1.0 alpha at the foundation stage. Its
+interfaces may change as the Solid resource, action, authentication, and
+authorization boundaries become concrete. We will record those changes, but we
+will not preserve a poor early interface with compatibility shims.
+
+It currently provides:
 
 - Solid storage and resource value objects.
 - URI/path normalization for Solid storage roots and contained resources.
@@ -97,19 +124,39 @@ def deps do
 end
 ```
 
-Once published:
+Install from the public Git repository and commit the resulting `mix.lock` to
+pin the resolved revision:
 
 ```elixir
 def deps do
   [
-    {:solid_ash, "~> 0.1.0"}
+    {:solid_ash, github: "vintrepid/solid_ash"}
   ]
 end
 ```
+
+Lotus applications should normally consume the tested `ash_lotus`
+distribution instead of assembling and overriding this dependency graph
+themselves. Starting SolidAsh also starts its runtime dependencies, including
+JournalAsh; hosts remain responsible for configuring journal policy and
+storage, authentication, authorization, repositories, and encryption keys.
+
+Ash 3.33 requires the host to configure string-length counting explicitly:
+
+```elixir
+config :ash, default_string_length_count: :codepoints
+```
+
+See [SECURITY.md](SECURITY.md) for dependency minimums and the current audit-feed
+acknowledgement. The dependency minimums apply independently of the lockfile.
 
 ## Development
 
 ```sh
 mix deps.get
+mix hex.audit
+mix format --check-formatted
+mix compile --warnings-as-errors
 mix test
+mix docs
 ```
