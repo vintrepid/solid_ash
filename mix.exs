@@ -12,7 +12,6 @@ defmodule SolidAsh.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: "Solid pod storage and authorization primitives for Ash/Phoenix apps",
-      hex: [ignore_advisories: ["EEF-CVE-2026-32686"]],
       package: package(),
       docs: docs()
     ]
@@ -29,19 +28,22 @@ defmodule SolidAsh.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ash, "~> 3.33"},
+      {:ash, "~> 3.34 and >= 3.34.6"},
       # JournalAsh is independent of SolidAsh; this immutable public commit is
       # the lower-layer journal contract validated by this library.
       {:journal_ash,
        github: "vintrepid/journal_ash", ref: "898f427b4bb7126fdc3d8d8ca212aefb24e170db"},
       # SolidAsh follows the public upstream contract. AshLotus may override
       # this with its maintained, compatibility-tested fork.
-      {:ash_authentication, "~> 4.0"},
-      {:ash_postgres, "~> 2.13"},
+      {:ash_authentication, "~> 4.15 and >= 4.15.0"},
+      {:ash_postgres, "~> 2.13.0"},
       {:ash_cloak, "~> 0.4"},
       # Keep the documented security floors even in a host with older locks.
       {:ash_sql, "~> 0.7 and >= 0.7.1"},
       {:postgrex, "~> 0.22 and >= 0.22.4"},
+      {:decimal, "~> 3.1 and >= 3.1.2"},
+      {:spark, "~> 2.7 and >= 2.7.6"},
+      {:mint, "~> 1.10 and >= 1.10.2"},
       {:cloak, "~> 1.0"},
       {:jason, "~> 1.4"},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false}

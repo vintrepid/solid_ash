@@ -147,22 +147,35 @@ themselves. Starting SolidAsh also starts its runtime dependencies, including
 JournalAsh; hosts remain responsible for configuring journal policy and
 storage, authentication, authorization, repositories, and encryption keys.
 
-Ash 3.33 requires the host to configure string-length counting explicitly:
+Ash requires the host to configure string-length counting explicitly:
 
 ```elixir
 config :ash, default_string_length_count: :codepoints
 ```
 
-See [SECURITY.md](SECURITY.md) for dependency minimums and the current audit-feed
-acknowledgement. The dependency minimums apply independently of the lockfile.
+`SolidAsh.Vault` enforces AES-GCM-only configuration for **every** cipher,
+including retained rotation decryptors. CTR, legacy and custom ciphers are
+rejected at startup and on each encryption/decryption operation. Existing CTR
+data must be migrated and verified separately before adopting this version;
+there is no automatic migration or fallback decryptor.
+
+See [SECURITY.md](SECURITY.md) for patched dependency floors, key/configuration
+requirements and the explicit complete-vault inventory needed by the narrow
+Cloak advisory gate. There are no permanent project advisory ignores.
 
 ## Development
 
 ```sh
 mix deps.get
-mix hex.audit
+mix test test/vault_security_test.exs test/security_inventory_test.exs
+mix solid_ash.security
 mix format --check-formatted
 mix compile --warnings-as-errors
 mix test
 mix docs
 ```
+
+The dedicated security tests and full suite run in separate Mix processes;
+neither is silently skipped by invoking the other. Plain `mix hex.audit` still
+reports the Cloak AES-CTR advisory; only the guarded native task may acknowledge
+its reviewed, configuration-specific non-applicability for one invocation.
