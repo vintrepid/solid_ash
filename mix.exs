@@ -9,6 +9,7 @@ defmodule SolidAsh.MixProject do
       app: :solid_ash,
       version: @version,
       elixir: "~> 1.20",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: "Solid pod storage and authorization primitives for Ash/Phoenix apps",
@@ -27,24 +28,30 @@ defmodule SolidAsh.MixProject do
   end
 
   # Run "mix help deps" to learn about dependencies.
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
   defp deps do
     [
-      {:ash, "~> 3.33"},
+      {:ash, "~> 3.37 and >= 3.37.2"},
       # JournalAsh is independent of SolidAsh; this immutable public commit is
       # the lower-layer journal contract validated by this library.
       {:journal_ash,
        github: "vintrepid/journal_ash", ref: "898f427b4bb7126fdc3d8d8ca212aefb24e170db"},
-      # SolidAsh follows the public upstream contract. AshLotus may override
-      # this with its maintained, compatibility-tested fork.
-      {:ash_authentication, "~> 4.0"},
-      {:ash_postgres, "~> 2.13"},
-      {:ash_cloak, "~> 0.4"},
+      # Upstream 4.15 caps Assent below the Apple callback security fix.
+      # This tested fork is temporarily required for the unreleased dependency
+      # compatibility fix (EEF-CVE-2026-117656); return to Hex once released.
+      {:ash_authentication,
+       git: "https://github.com/vintrepid/ash_authentication.git",
+       ref: "c28f9396cea7835f0ef3b92ceee303770075bde7"},
+      {:ash_postgres, "~> 2.15 and >= 2.15.2"},
+      {:ash_cloak, "~> 0.5.0"},
       # Keep the documented security floors even in a host with older locks.
-      {:ash_sql, "~> 0.7 and >= 0.7.1"},
-      {:postgrex, "~> 0.22 and >= 0.22.4"},
-      {:cloak, "~> 1.0"},
-      {:jason, "~> 1.4"},
-      {:ex_doc, "~> 0.31", only: :dev, runtime: false}
+      {:ash_sql, "~> 0.8.4"},
+      {:postgrex, "~> 0.22.4"},
+      {:cloak, "~> 1.1 and >= 1.1.4"},
+      {:jason, "~> 1.4 and >= 1.4.5"},
+      {:ex_doc, "~> 0.40.4", only: :dev, runtime: false}
     ]
   end
 
