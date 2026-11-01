@@ -23,4 +23,7 @@ defmodule SolidAsh.Vault do
   """
 
   use Cloak.Vault, otp_app: :solid_ash
+
+  @impl GenServer
+  def init(config), do: {:ok, JournalAsh.Encryption.validate_config!(config)}
 end

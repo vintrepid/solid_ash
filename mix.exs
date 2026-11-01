@@ -13,7 +13,9 @@ defmodule SolidAsh.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: "Solid pod storage and authorization primitives for Ash/Phoenix apps",
-      hex: [ignore_advisories: ["EEF-CVE-2026-32686"]],
+      # CTR is unreachable: every vault key is validated as AES-256-GCM.
+      # See SECURITY.md and the encryption rejection/tampering tests.
+      hex: [ignore_advisories: ["EEF-CVE-2026-95105"]],
       package: package(),
       docs: docs()
     ]
@@ -37,7 +39,7 @@ defmodule SolidAsh.MixProject do
       # JournalAsh is independent of SolidAsh; this immutable public commit is
       # the lower-layer journal contract validated by this library.
       {:journal_ash,
-       github: "vintrepid/journal_ash", ref: "898f427b4bb7126fdc3d8d8ca212aefb24e170db"},
+       github: "vintrepid/journal_ash", ref: "c901b22dab6948b7cbb030d971142cc1884db8c8"},
       # Upstream 4.15 caps Assent below the Apple callback security fix.
       # This tested fork is temporarily required for the unreleased dependency
       # compatibility fix (EEF-CVE-2026-117656); return to Hex once released.

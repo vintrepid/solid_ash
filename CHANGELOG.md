@@ -19,3 +19,9 @@
 - Add AshCloak/Cloak vault support.
 - Add employee/guide pod contract template data.
 - Add email normalization and obfuscation helpers for Solid client responses.
+
+## Unreleased
+
+- Require AES-256-GCM for all vault keys; reject CTR and legacy CTR fallback.
+- Journal sealing now requires a running configured Cloak vault rather than an
+  arbitrary encrypt/decrypt module. Existing CTR values require migration.
