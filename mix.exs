@@ -39,7 +39,7 @@ defmodule SolidAsh.MixProject do
       # JournalAsh is independent of SolidAsh; this immutable public commit is
       # the lower-layer journal contract validated by this library.
       {:journal_ash,
-       github: "vintrepid/journal_ash", ref: "c901b22dab6948b7cbb030d971142cc1884db8c8"},
+       github: "vintrepid/journal_ash", ref: "6f87f08e0398ebba66ccf266dd4a243248dcec5e"},
       # Upstream 4.15 caps Assent below the Apple callback security fix.
       # This tested fork is temporarily required for the unreleased dependency
       # compatibility fix (EEF-CVE-2026-117656); return to Hex once released.
