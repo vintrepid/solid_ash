@@ -35,25 +35,25 @@ defmodule SolidAsh.MixProject do
 
   defp deps do
     [
-      {:ash, "~> 3.37 and >= 3.37.2"},
+      {:ash, ">= 3.37.2"},
       # JournalAsh is independent of SolidAsh; this immutable public commit is
       # the lower-layer journal contract validated by this library.
       {:journal_ash,
-       github: "vintrepid/journal_ash", ref: "6f87f08e0398ebba66ccf266dd4a243248dcec5e"},
+       github: "vintrepid/journal_ash", ref: "e173cba5119edf28bc37ec288f0fb9062343edbb"},
       # Upstream 4.15 caps Assent below the Apple callback security fix.
       # This tested fork is temporarily required for the unreleased dependency
       # compatibility fix (EEF-CVE-2026-117656); return to Hex once released.
       {:ash_authentication,
        git: "https://github.com/vintrepid/ash_authentication.git",
        ref: "c28f9396cea7835f0ef3b92ceee303770075bde7"},
-      {:ash_postgres, "~> 2.15 and >= 2.15.2"},
-      {:ash_cloak, "~> 0.5.0"},
+      {:ash_postgres, ">= 2.15.2"},
+      {:ash_cloak, ">= 0.5.0"},
       # Keep the documented security floors even in a host with older locks.
-      {:ash_sql, "~> 0.8.4"},
-      {:postgrex, "~> 0.22.4"},
-      {:cloak, "~> 1.1 and >= 1.1.4"},
-      {:jason, "~> 1.4 and >= 1.4.5"},
-      {:ex_doc, "~> 0.40.4", only: :dev, runtime: false}
+      {:ash_sql, ">= 0.8.4"},
+      {:postgrex, ">= 0.22.4"},
+      {:cloak, ">= 1.1.4"},
+      {:jason, ">= 1.4.5"},
+      {:ex_doc, ">= 0.40.4", only: :dev, runtime: false}
     ]
   end
 
