@@ -13,8 +13,8 @@ reporting channel. Do not include customer data or real credentials.
 
 The declared minimums prevent older host lockfiles from retaining known flaws:
 
-- Ash 3.34.6, Spark 2.7.6 and Decimal 3.1.2 are explicit floors, including
-  when an application starts with an older lockfile. The obsolete Decimal
+- The dependency graph and guarded native audit retain the patched Ash, Spark
+  and Decimal floors, including when a host begins with an older lockfile. The obsolete Decimal
   audit-feed acknowledgement has been removed.
 - AshAuthentication 4.15.0 includes the public maintenance fixes, including
   single-use token redemption enforcement:
