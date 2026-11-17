@@ -8,7 +8,7 @@ defmodule SolidAsh.VaultTest do
     assert {:ok, encrypted} = SolidAsh.Vault.encrypt("private pod data")
     assert {:ok, "private pod data"} = SolidAsh.Vault.decrypt(encrypted)
     last = byte_size(encrypted) - 1
-    <<prefix::binary-size(last), byte>> = encrypted
+    <<prefix::binary-size(^last), byte>> = encrypted
 
     refute match?(
              {:ok, value} when is_binary(value),
@@ -19,7 +19,7 @@ defmodule SolidAsh.VaultTest do
       unsafe =
         Keyword.update!(config, :ciphers, &(&1 ++ [old: {cipher, tag: "CTR.V0", key: @key}]))
 
-      assert_raise ArgumentError, ~r/only AES-256-GCM/, fn -> SolidAsh.Vault.init(unsafe) end
+      assert {:stop, %Cloak.InvalidConfig{}} = SolidAsh.Vault.init(unsafe)
     end
   end
 end
