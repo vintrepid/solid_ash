@@ -13,9 +13,6 @@ defmodule SolidAsh.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: "Solid pod storage and authorization primitives for Ash/Phoenix apps",
-      # CTR is unreachable: every vault key is validated as AES-256-GCM.
-      # See SECURITY.md and the encryption rejection/tampering tests.
-      hex: [ignore_advisories: ["EEF-CVE-2026-95105"]],
       package: package(),
       docs: docs()
     ]
@@ -49,7 +46,7 @@ defmodule SolidAsh.MixProject do
       {:ash_postgres, ">= 2.15.2"},
       {:ash_cloak, ">= 0.5.0"},
       # Keep the documented security floors even in a host with older locks.
-      {:ash_sql, ">= 0.8.4"},
+      {:ash_sql, ">= 0.8.9"},
       {:postgrex, ">= 0.22.4"},
       {:cloak, ">= 1.1.4"},
       {:jason, ">= 1.4.5"},
