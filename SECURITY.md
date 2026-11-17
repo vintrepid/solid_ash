@@ -58,13 +58,9 @@ labels and tags are unique.
 
 ## Narrow advisory acknowledgement
 
-There is no permanent `hex.ignore_advisories` entry. Plain `mix hex.audit`
-continues to report the Cloak advisory. The owning `mix solid_ash.security`
-task may acknowledge **only `EEF-CVE-2026-95105`**, for one audit invocation,
-after an explicitly complete inventory passes the native guard. The callback receives an explicit child-process environment; the shared
-Erlang VM environment is never changed, including on errors or throws. Existing project or
-environment advisory/retirement ignores are forbidden; every other finding
-still fails audit.
+The standalone project retains exactly `EEF-CVE-2026-95105` as its reviewed package acknowledgement so ordinary package maintenance can resolve this known boundary. The native vault enforces authenticated GCM on every path. CI additionally requires the boundary regressions and the complete inventory gate before the full suite. No unrelated advisory or retirement bypass is accepted.
+
+`mix solid_ash.security` verifies the explicit complete inventory and supplies the same single acknowledgement to its isolated audit child. The shared Erlang VM environment is never changed. Raw Hex output still identifies the acknowledged Cloak finding; report it with its scope rather than describing the package as vulnerability-free.
 
 The standalone project deliberately configures no vault or encryption key:
 

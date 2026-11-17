@@ -2,36 +2,16 @@ defmodule Mix.Tasks.SolidAsh.Security do
   use Mix.Task
 
   @shortdoc "Checks native vault inventory before narrowly acknowledging the Cloak advisory"
-  @moduledoc """
-  Audits dependencies without permanent project advisory ignores.
-
-      mix solid_ash.security
-
-  Requires an explicit complete inventory in the owning project:
-
-      config :solid_ash, :security,
-        cloak_inventory: :complete,
-        cloak_vaults: []
-
-  Include `{:solid_ash, SolidAsh.Vault}` when configured or active. Other vault
-  implementations, including compiled but unconfigured custom vaults, fail
-  closed. The task compiles/loads code but does not start the host application
-  or workers. It never requires test files from a dependency package.
-
-  Owning CI must run the dedicated vault security tests separately before
-  invoking this task, and the full suite afterwards in a separate Mix process.
-  Every other advisory/retirement remains an audit failure. An unguarded
-  `mix hex.audit` still reports the Cloak advisory.
-  """
+  @moduledoc "Audits the native encryption boundary while retaining only its reviewed package acknowledgement.\n\n    mix solid_ash.security\n\nRequires an explicit complete inventory in the owning project:\n\n    config :solid_ash, :security,\n      cloak_inventory: :complete,\n      cloak_vaults: []\n\nInclude `{:solid_ash, SolidAsh.Vault}` when configured or active. Other vault\nimplementations, including compiled but unconfigured custom vaults, fail\nclosed. The task compiles/loads code but does not start the host application\nor workers. It never requires test files from a dependency package.\n\nOwning CI must run the dedicated vault security tests separately before\ninvoking this task, and the full suite afterwards in a separate Mix process.\nEvery other advisory/retirement remains an audit failure. An unguarded\n`mix hex.audit` still reports the Cloak advisory.\n"
 
   @impl Mix.Task
   def run(arguments) do
     if arguments != [], do: Mix.raise("solid_ash.security does not accept audit bypass options")
     hex_config = Mix.Project.config()[:hex] || []
 
-    if Keyword.get(hex_config, :ignore_advisories, []) != [] or
-         Keyword.get(hex_config, :ignore_retirements, []) != [] do
-      Mix.raise("solid_ash.security forbids permanent project audit ignores")
+    case SolidAsh.Security.validate_project_audit_policy(hex_config) do
+      :ok -> :ok
+      {:error, message} -> Mix.raise(message)
     end
 
     Mix.Task.run("compile")

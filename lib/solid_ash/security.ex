@@ -187,4 +187,19 @@ defmodule SolidAsh.Security do
 
   defp validate_active([]), do: :ok
   defp validate_active([Vault]), do: Vault.validate_runtime_configuration()
+
+  @doc "Retain only this library's reviewed package acknowledgement; reject unrelated audit bypasses."
+  def validate_project_audit_policy(options) when is_list(options) do
+    if Keyword.keyword?(options) and
+         length(Keyword.keys(options)) == length(Enum.uniq(Keyword.keys(options))) and
+         Keyword.get(options, :ignore_advisories, []) in [[], [@advisory]] and
+         Keyword.get(options, :ignore_retirements, []) == [] do
+      :ok
+    else
+      {:error,
+       "Only the reviewed Cloak package acknowledgement is permitted; all other advisory and retirement findings must fail"}
+    end
+  end
+
+  def validate_project_audit_policy(_), do: {:error, "Invalid project audit policy"}
 end

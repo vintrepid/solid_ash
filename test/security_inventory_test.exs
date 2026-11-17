@@ -239,4 +239,17 @@ defmodule SolidAsh.SecurityInventoryTest do
 
     assert is_nil(System.get_env("HEX_IGNORE_ADVISORIES"))
   end
+
+  test "only the reviewed package policy survives; unrelated advisory and retirement bypasses fail" do
+    assert :ok = Security.validate_project_audit_policy([])
+    assert :ok = Security.validate_project_audit_policy(ignore_advisories: ["EEF-CVE-2026-95105"])
+
+    assert {:error, _} =
+             Security.validate_project_audit_policy(ignore_advisories: ["another-advisory"])
+
+    assert {:error, _} = Security.validate_project_audit_policy(ignore_retirements: [:all])
+
+    assert {:error, _} =
+             Security.validate_project_audit_policy(ignore_advisories: [], ignore_advisories: [])
+  end
 end
