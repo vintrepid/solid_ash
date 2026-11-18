@@ -1,0 +1,29 @@
+{
+  "task": "gcm-only-vault",
+  "product": "solid_ash",
+  "branch": "feature/solid-ash/gcm-only-vault",
+  "status": "verified_review_branch",
+  "scope": "Own authenticated AES-GCM-only Vault boundary; patched public upstream floors; narrow reviewed advisory non-applicability gate",
+  "non_goals": ["No key ownership change", "No real ciphertext or data migration", "No CTR fallback decryptor", "No Calvin or host implementation changes", "No merge or deploy"],
+  "verification": {
+    "security_acceptances": {"command": "mix test test/vault_security_test.exs test/security_inventory_test.exs", "passed": 21},
+    "full_suite": {"command": "mix test", "passed": 33},
+    "guarded_audit": {"command": "mix solid_ash.security", "status": "passed", "temporary_advisory": "EEF-CVE-2026-95105"},
+    "unguarded_audit": {"command": "mix hex.audit", "status": "expected failure: Cloak advisory remains visible"},
+    "lock": "mix deps.get --check-locked passed; only mandatory Ash, AshAuthentication, Decimal, Spark and Mint tuples changed",
+    "format": "mix format --check-formatted passed",
+    "compile": "mix compile --warnings-as-errors passed (owning source; inherited upstream dependency warnings during first compilation)",
+    "docs": "mix docs passed",
+    "diff": "git diff --check passed"
+  },
+  "public_security_contract": {
+    "version": 1,
+    "prepared_configuration": "SolidAsh.Vault.validate_configuration/1",
+    "active_configuration": "SolidAsh.Vault.validate_runtime_configuration/0",
+    "complete_inventory": "SolidAsh.Security.validate_inventory/1",
+    "only_guarded_vault": "SolidAsh.Vault",
+    "crypto": "exact Cloak.Ciphers.AES.GCM for every default and rotation cipher"
+  },
+  "standing_ci_gate": "Not installed. Existing CI file unchanged; new standing advisory-gate wiring requires separate explicit approval.",
+  "host_adoption": "Not performed. Distribution owns immutable pin/provenance and host acceptance before adoption. No Calvin or Dabhand changes."
+}

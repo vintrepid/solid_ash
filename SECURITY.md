@@ -13,6 +13,14 @@ reporting channel. Do not include customer data or real credentials.
 
 The declared minimums prevent older host lockfiles from retaining known flaws:
 
+- The dependency graph and guarded native audit retain the patched Ash, Spark
+  and Decimal floors, including when a host begins with an older lockfile. The obsolete Decimal
+  audit-feed acknowledgement has been removed.
+- AshAuthentication 4.15.0 includes the public maintenance fixes, including
+  single-use token redemption enforcement:
+  [upstream advisory](https://github.com/team-alembic/ash_authentication/security/advisories/GHSA-23gr-vcp4-r27q).
+  Hosts using AshAuthenticationPhoenix also need its separately patched
+  release; that dependency is not owned by this library.
 - AshCloak 0.4.0 addresses unsafe deserialization and plaintext-argument leakage:
   [deserialization advisory](https://github.com/ash-project/ash_cloak/security/advisories/GHSA-rc26-mrm2-6pf9),
   [plaintext advisory](https://github.com/ash-project/ash_cloak/security/advisories/GHSA-qp4v-vvrg-8ggx).
@@ -22,28 +30,70 @@ The declared minimums prevent older host lockfiles from retaining known flaws:
   [advisory](https://github.com/ash-project/ash_sql/security/advisories/GHSA-ww8j-58rc-f8h3).
 - Postgrex 0.22.4 addresses the streamed-statement comment injection:
   [EEF advisory](https://cna.erlef.org/cves/CVE-2026-66838.html).
+- Mint 1.10.2 addresses the remaining HTTP framing/header allocation findings:
+  [published advisories](https://hex.pm/packages/mint/advisories).
 
-JournalAsh enforces Decimal 3.x. Hex currently labels all Decimal versions with
-`EEF-CVE-2026-32686`, while the [EEF CNA](https://cna.erlef.org/cves/CVE-2026-32686.html)
-identifies 3.0.0 as fixed. The project acknowledges only that advisory ID;
-`mix hex.audit` still fails on other findings. Remove the acknowledgement once
-the feed is corrected.
+## Authenticated encryption boundary
 
-## AES-GCM enforcement
+[EEF-CVE-2026-95105](https://cna.erlef.org/cves/CVE-2026-95105.html) affects
+Cloak's AES-CTR and deprecated AES-CTR implementations. Changing only the
+default cipher is insufficient: retaining either CTR decryptor still permits
+unauthenticated ciphertext to be accepted.
 
-All encryption and rotation keys must use `Cloak.Ciphers.AES.GCM` with a
-32-byte key and a distinct tag. CTR, including legacy CTR decryption fallback,
-is rejected. JournalAsh validates the running vault configuration and invokes
-Cloak with that validated configuration; SolidAsh validates its vault at startup.
-Tests cover CTR rejection, rotation, tampering and wrong keys.
+`SolidAsh.Vault` therefore rejects every cipher except exactly
+`Cloak.Ciphers.AES.GCM`, including non-default rotation entries. It validates
+the final configuration at startup, saving, hot upgrades and every default or
+explicit encrypt/decrypt call. Cipher labels and tags must be unique, keys are
+32-byte binaries, tags are nonempty binaries up to 255 bytes, and IV lengths
+are 12 or 16 bytes. Unsupported, legacy or custom modules, duplicate options
+and unknown options fail closed. Upstream `{:ok, :error}` authentication
+failures are converted into sanitized errors; only binary authenticated
+plaintext is a successful decrypt result.
 
-EEF-CVE-2026-95105 applies to Cloak's unauthenticated CTR ciphers. The Hex
-package-level audit cannot distinguish cipher selection. This one advisory ID
-is acknowledged because the affected modes are unreachable, following the
-[EEF workaround](https://cna.erlef.org/cves/CVE-2026-95105.html). This does not
-permit CTR or suppress any other advisory. Revisit when Cloak removes those
-modes or Hex supports configuration-sensitive findings.
+The host retains key ownership. This change does not generate production keys,
+read or re-encrypt stored content, or provide a CTR fallback. **Existing CTR
+users must plan, perform and verify their data migration separately before
+adopting this version.** Retained old AES-GCM keys remain supported when their
+labels and tags are unique.
 
-Hosts with existing CTR ciphertext must migrate it to GCM with the old key
-in a separate trusted migration before adopting this version. The runtime
-never decrypts CTR and never silently discards or rewrites stored data.
+## Narrow advisory acknowledgement
+
+The standalone project retains exactly `EEF-CVE-2026-95105` as its reviewed package acknowledgement so ordinary package maintenance can resolve this known boundary. The native vault enforces authenticated GCM on every path. CI additionally requires the boundary regressions and the complete inventory gate before the full suite. No unrelated advisory or retirement bypass is accepted.
+
+`mix solid_ash.security` verifies the explicit complete inventory and supplies the same single acknowledgement to its isolated audit child. The shared Erlang VM environment is never changed. Raw Hex output still identifies the acknowledged Cloak finding; report it with its scope rather than describing the package as vulnerability-free.
+
+The standalone project deliberately configures no vault or encryption key:
+
+```elixir
+config :solid_ash, :security,
+  cloak_inventory: :complete,
+  cloak_vaults: []
+```
+
+When a host configures or starts `SolidAsh.Vault`, it must declare
+`cloak_vaults: [{:solid_ash, SolidAsh.Vault}]`. Missing, duplicate, extra or
+unsafe inventory entries fail. Discovery checks loaded application
+configuration, active Cloak/configuration caches, and compiled or loaded
+`Cloak.Vault` behaviours. Compiled custom vaults are denied even when currently
+unconfigured because imperative start options and custom callbacks cannot be
+attested by inspecting a static GCM configuration. The task loads the owning
+and resolved dependency application metadata to include configured but not
+started applications. No host applications or workers are started by the gate.
+Direct callers of `validate_inventory/1` must similarly load known application
+metadata before asserting inventory completeness.
+
+The native validator can inspect another prepared configuration, but that is
+not proof that arbitrary vault callbacks continue enforcing it. This
+acknowledgement does not cover unrelated vaults, direct calls to Cloak CTR,
+unreviewed replacement modules, stored legacy ciphertext, or future dynamic
+code/configuration changes. Distribution owners must also verify exact trusted
+native source revisions, run host/inventory tests, and enforce that no such
+unsafe paths are introduced. Re-audit on dependency/configuration/code changes;
+remove this exception when the advisory is no longer relevant.
+
+Owning verification should run the dedicated security boundary tests, the
+guarded audit and the complete test suite in separate Mix processes. The
+existing CI audit is intentionally unchanged pending separate approval for a
+standing advisory-gate workflow; it continues to report the upstream Cloak
+finding. The shipped guard/task does not depend on test source being present
+in a consuming application.
