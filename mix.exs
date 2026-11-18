@@ -45,7 +45,7 @@ defmodule SolidAsh.MixProject do
       # compatibility fix (EEF-CVE-2026-117656); return to Hex once released.
       {:ash_authentication,
        git: "https://github.com/vintrepid/ash_authentication.git",
-       ref: "eb13b2bda797f20645d54181943e10162be8d240"},
+       ref: "5e998e8ff274091353c725a20063d963bd4e2f4b"},
       {:ash_postgres, ">= 2.15.2"},
       {:ash_cloak, ">= 0.5.0"},
       # Keep the documented security floors even in a host with older locks.
